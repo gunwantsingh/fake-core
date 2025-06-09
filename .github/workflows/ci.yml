@@ -53,15 +53,15 @@ jobs:
     steps:
       - uses: actions/checkout@v3
 
-      - name: Set up Python
-        uses: actions/setup-python@v4
-
-      - name: Install TruffleHog
-        run: pip install trufflehog
-
-      - name: Run TruffleHog on Filesystem
+      - name: Download TruffleHog Binary
         run: |
-          trufflehog filesystem --directory . --no-update --json > trufflehog-results.json
+          curl -L https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog-linux-amd64 -o trufflehog
+          chmod +x trufflehog
+          sudo mv trufflehog /usr/local/bin/
+
+      - name: Run TruffleHog in Filesystem Mode
+        run: |
+          trufflehog filesystem --json . > trufflehog-results.json
 
       - name: Upload TruffleHog Report
         uses: actions/upload-artifact@v4
