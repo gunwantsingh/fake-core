@@ -30,7 +30,6 @@ jobs:
           name: semgrep-report
           path: semgrep-report.json
 
-
   trufflehog:
     name: Run TruffleHog Secret Scan
     runs-on: ubuntu-latest
