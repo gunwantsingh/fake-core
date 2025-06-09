@@ -1,4 +1,4 @@
-name: CI Pipeline with Semgrep and ZAP
+name: CI Pipeline with Semgrep, ZAP, TruffleHog, and File Listing
 
 on:
   push:
@@ -46,3 +46,45 @@ jobs:
         with:
           name: zap-report
           path: owasp-zap-report.html
+
+  trufflehog:
+    name: Run TruffleHog Secret Scan
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: Set up Python
+        uses: actions/setup-python@v4
+
+      - name: Install TruffleHog
+        run: pip install trufflehog
+
+      - name: Run TruffleHog on Filesystem
+        run: |
+          trufflehog filesystem --directory . --no-update --json > trufflehog-results.json
+
+      - name: Upload TruffleHog Report
+        uses: actions/upload-artifact@v4
+        with:
+          name: trufflehog-report
+          path: trufflehog-results.json
+
+      - name: Fail if secrets are found
+        run: |
+          if grep -q '"reason"' trufflehog-results.json; then
+            echo "❌ Secrets found by TruffleHog. Failing the build."
+            cat trufflehog-results.json
+            exit 1
+          else
+            echo "✅ No secrets found by TruffleHog."
+          fi
+
+  list-files:
+    name: List All Files and Folders
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+
+      - name: List Files and Directories
+        run: |
+          ls
