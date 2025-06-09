@@ -50,6 +50,7 @@ jobs:
   trufflehog:
     name: Run TruffleHog Secret Scan
     runs-on: ubuntu-latest
+    needs: zap
     steps:
       - uses: actions/checkout@v3
 
@@ -82,9 +83,26 @@ jobs:
   list-files:
     name: List All Files and Folders
     runs-on: ubuntu-latest
+    needs: trufflehog
     steps:
       - uses: actions/checkout@v3
 
       - name: List Files and Directories
         run: |
-          ls
+          echo "📂 Listing all files and folders in the repo:"
+          find . -type d
+          echo "📄 Listing all files:"
+          find . -type f
+
+      - name: Save File List to Artifact
+        run: |
+          find . -type d > directories.txt
+          find . -type f > files.txt
+
+      - name: Upload File Listings
+        uses: actions/upload-artifact@v4
+        with:
+          name: file-listings
+          path: |
+            directories.txt
+            files.txt
