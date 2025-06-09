@@ -1,4 +1,4 @@
-name: CI Pipeline with Semgrep, ZAP, TruffleHog, and File Listing
+name: CI Pipeline with Semgrep, TruffleHog, and File Listing
 
 on:
   push:
@@ -33,7 +33,7 @@ jobs:
   trufflehog:
     name: Run TruffleHog Secret Scan
     runs-on: ubuntu-latest
-    needs: zap
+    needs: semgrep
     steps:
       - uses: actions/checkout@v3
 
