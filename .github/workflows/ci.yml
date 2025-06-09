@@ -4,6 +4,8 @@ on:
   push:
     branches: [ main ]
   pull_request:
+  schedule:
+    - cron: '0 7 * * 1'  # Every Monday at 07:00 UTC
 
 permissions:
   contents: read
@@ -31,21 +33,16 @@ jobs:
           path: semgrep-report.json
 
   trufflehog:
-    name: Run TruffleHog Secret Scan
+    name: Run TruffleHog Secret Scan (via Docker)
     runs-on: ubuntu-latest
     needs: semgrep
     steps:
       - uses: actions/checkout@v3
 
-      - name: Download TruffleHog Binary (v3+)
+      - name: Run TruffleHog via Docker
         run: |
-          curl -L https://github.com/trufflesecurity/trufflehog/releases/latest/download/trufflehog-linux-amd64 -o trufflehog
-          chmod +x trufflehog
-          sudo mv trufflehog /usr/local/bin/trufflehog
-
-      - name: Run TruffleHog in Filesystem Mode
-        run: |
-          trufflehog filesystem --json . > trufflehog-results.json
+          docker run --rm -v "$(pwd)":/pwd ghcr.io/trufflesecurity/trufflehog:latest \
+            filesystem --json /pwd > trufflehog-results.json
 
       - name: Upload TruffleHog Report
         uses: actions/upload-artifact@v4
